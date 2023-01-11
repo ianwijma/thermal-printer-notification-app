@@ -3,6 +3,7 @@ import ElectronEvents from './app/events/electron.events';
 import UpdateEvents from './app/events/update.events';
 import { app, BrowserWindow } from 'electron';
 import App from './app/app';
+import NotificationService from "./app/service/notificationService";
 
 export default class Main {
   static initialize() {
@@ -13,7 +14,7 @@ export default class Main {
   }
 
   static bootstrapApp() {
-    App.main(app, BrowserWindow);
+    App.main(app, BrowserWindow, NotificationService);
   }
 
   static bootstrapAppEvents() {
@@ -21,7 +22,7 @@ export default class Main {
 
     // initialize auto updater service
     if (!App.isDevelopmentMode()) {
-      // UpdateEvents.initAutoUpdateService();
+      // UpdateEvents.initAutoUpdateService(); // TODO: Make work
     }
   }
 }

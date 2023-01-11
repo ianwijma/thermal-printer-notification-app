@@ -1,15 +1,20 @@
-import { BrowserWindow, shell, screen } from 'electron';
-import { rendererAppName, rendererAppPort } from './constants';
+import { App as ElectronApp, BrowserWindow, shell, screen, Tray, Menu } from 'electron';
+import { electronAppName, rendererAppName, rendererAppPort } from "./constants";
 import { environment } from '../environments/environment';
 import { join } from 'path';
 import { format } from 'url';
+import * as path from "path";
+import NotificationService from "./service/notificationService";
 
 export default class App {
   // Keep a global reference of the window object, if you don't, the window will
   // be closed automatically when the JavaScript object is garbage collected.
-  static mainWindow: Electron.BrowserWindow;
-  static application: Electron.App;
+  static mainWindow: BrowserWindow;
+  static tray: Tray;
+  static contextMenu: Menu;
+  static application: ElectronApp;
   static BrowserWindow;
+  static NotificationService;
 
   public static isDevelopmentMode() {
     const isEnvironmentSet: boolean = 'ELECTRON_IS_DEV' in process.env;
@@ -44,8 +49,11 @@ export default class App {
     // This method will be called when Electron has finished
     // initialization and is ready to create browser windows.
     // Some APIs can only be used after this event occurs.
-    App.initMainWindow();
-    App.loadMainWindow();
+    App.NotificationService.main();
+    App.initTray();
+    App.initContextMenu();
+    // App.initMainWindow();
+    // App.loadMainWindow();
   }
 
   private static onActivate() {
@@ -54,6 +62,19 @@ export default class App {
     if (App.mainWindow === null) {
       App.onReady();
     }
+  }
+
+  private static initTray() {
+    const imagePath = path.resolve(__dirname, 'assets', 'termal-printer-notification.ico');
+    App.tray = new Tray(imagePath);
+    App.tray.setTitle(electronAppName);
+  }
+
+  private static initContextMenu() {
+    App.contextMenu = Menu.buildFromTemplate([
+      { label: 'Client', type: 'normal' }
+    ]);
+    App.tray.setContextMenu(App.contextMenu);
   }
 
   private static initMainWindow() {
@@ -110,17 +131,16 @@ export default class App {
     }
   }
 
-  static main(app: Electron.App, browserWindow: typeof BrowserWindow) {
+  static main(app: ElectronApp, browserWindow: typeof BrowserWindow, notificationService: typeof NotificationService) {
     // we pass the Electron.App object and the
     // Electron.BrowserWindow into this function
     // so this class has no dependencies. This
     // makes the code easier to write tests for
 
     App.BrowserWindow = browserWindow;
+    App.NotificationService = NotificationService;
     App.application = app;
-    console.log('Profound Memes');
 
-    App.application.on('window-all-closed', App.onWindowAllClosed); // Quit when all windows are closed.
     App.application.on('ready', App.onReady); // App is ready to load data
     App.application.on('activate', App.onActivate); // App is activated
   }
