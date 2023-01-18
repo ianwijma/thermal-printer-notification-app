@@ -4,6 +4,7 @@ const  { DEFAULT_PORT, CONNECTION_STRING } = require("../common/constants");
 const  { nanoid } = require("nanoid");
 const  bodyParser = require("body-parser");
 const  jwt = require("jsonwebtoken");
+const {getPrinter} = require("./utils/printer");
 
 const app = express();
 app.use(bodyParser.json());
@@ -12,8 +13,21 @@ const getRequestId = (request) => {
   return request.socket.remoteAddress;
 };
 
-app.get("/ping", (req, res) => {
+const displayMessage = async (message) => {
+  (await getPrinter())
+      .text('-----------------------')
+      .text(message)
+      .text('-----------------------')
+      .feed()
+      .feed()
+      .feed()
+      .cut()
+      .close()
+}
+
+app.get("/ping", async (req, res) => {
   res.send(CONNECTION_STRING);
+  displayMessage('MEMES!~')
 });
 
 const codes = {};
